@@ -8,6 +8,9 @@ import json
 class MyServer(HTTPServer):
     def init_state(self):
         self.round_phase = None
+        self.round_bomb = None
+        self.player_state = None
+        self.player_health = None
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -22,6 +25,9 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 
     def parse_payload(self, payload):
         round_phase = self.get_round_phase(payload)
+        round_bomb = self.get_round_bomb(payload)
+        player_state = self.get_player_state(payload)
+        player_health = self.get_player_health(payload)
         
         if round_phase != self.server.round_phase:
             self.server.round_phase = round_phase
@@ -39,6 +45,26 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     def get_round_phase(self, payload):
         if 'round' in payload and 'phase' in payload['round']:
             return payload['round']['phase']
+        else:
+            return None
+            
+    def get_round_bomb(self, payload):
+        if 'round' in payload and 'bomb' in payload['round']:
+            return payload['round']['bomb']
+        else:
+            return None
+            
+    def get_player_state(self, payload):
+        if 'player' in payload and 'state' in payload['player']:
+            return payload['player']['state']
+            print('new payload player & state')
+        else:
+            return None
+            
+    def get_player_health(self, payload):
+        if 'health' in payload:
+            return payload['health']
+            print('new payload player & state')
         else:
             return None
 

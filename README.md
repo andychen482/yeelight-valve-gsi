@@ -11,6 +11,14 @@ To control your Yeelight via local network, you need to enable the [developer mo
 Replace the IP address on the bottom of gsi.py with the lamp's IP address you want to control. 
 Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py and launch CS:GO.
 
+## TODO
+
+- [x] Round state colors
+- [ ] Bomb state colors
+- [ ] Player health colors
+- [ ] Bomb flashing
+- [ ] Low ammo flashing
+
 ## Credits
 Gratefully using the Yeelight python library by Stavros Korokithakis.
 
