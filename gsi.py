@@ -29,6 +29,19 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         player_state = self.get_player_state(payload)
         player_health = self.get_player_health(payload)
         
+        if round_bomb != self.server.round_bomb:
+            self.server.round_bomb = round_bomb
+            print('bomb status: %s' % round_bomb)
+                
+            if 'exploded' in round_bomb:
+                bulb.set_rgb(0, 255, 0)  
+                
+            if 'planted' in round_bomb:
+                bulb.set_rgb(255, 0, 0)
+                
+            if 'defused' in round_bomb:
+                bulb.set_rgb(0, 0, 255)
+        
         if round_phase != self.server.round_phase:
             self.server.round_phase = round_phase
             print('round phase: %s' % round_phase)
@@ -41,6 +54,14 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             
             if 'freezetime' in round_phase:
                 bulb.set_rgb(0, 0, 255)
+                
+        if player_state != self.server.player_state:
+            self.server.player_state = player_state
+            print('new player state: %s' % player_state)
+            
+        if player_health != self.server.player_health:
+            self.server.player_health = player_health
+            print('player health: %s' % player_health)
         
     def get_round_phase(self, payload):
         if 'round' in payload and 'phase' in payload['round']:

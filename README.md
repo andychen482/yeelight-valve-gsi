@@ -14,7 +14,7 @@ Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py a
 ## TODO
 
 - [x] Round state colors
-- [ ] Bomb state colors
+- [x] Bomb state colors
 - [ ] Player health colors
 - [ ] Bomb flashing
 - [ ] Low ammo flashing
