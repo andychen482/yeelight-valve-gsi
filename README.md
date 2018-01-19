@@ -2,7 +2,7 @@
 Changing light scenes on Yeelight smart lamps for different in-game scenarios in CS:GO. With a few minor alterations to the parsed states it would be fully compatible with Dota 2 aswell.
 
 ## Prerequisites
-- Python
+- Python 2.7 and above
 - CS:GO on Steam
 - Any Yeelight/Xiaomi/Mijia Wi-Fi lamp
 
@@ -20,12 +20,8 @@ Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py a
 - [ ] Multiple lamp support
 
 ## Credits
-Gratefully using the Yeelight python library by Stavros Korokithakis.
-
-https://github.com/skorokithakis/python-yeelight/
-
+Gratefully using the [Yeelight python library](https://github.com/skorokithakis/python-yeelight/) by Stavros Korokithakis.
 Copyright (c) 2016, Stavros Korokithakis
-
 All rights reserved.
 
 ## License
