@@ -8,7 +8,7 @@ Changing light scenes on Yeelight smart lamps for different in-game scenarios in
 
 ## Usage
 To control your Yeelight via local network, you need to enable the [developer mode](https://www.yeelight.com/en_US/developer) (also called LAN mode) on your lamp in the Yeelight app.
-Replace the IP address on the bottom of gsi.py with the lamp's IP address you want to control. 
+Set your lamp's IP address in the config.ini.
 Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py and launch CS:GO.
 
 ## TODO
@@ -17,7 +17,7 @@ Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py a
 - [x] Bomb state colors
 - [ ] Player health colors
 - [ ] Bomb flashing
-- [ ] Low ammo flashing
+- [ ] Multiple lamp support
 
 ## Credits
 Gratefully using the Yeelight python library by Stavros Korokithakis.

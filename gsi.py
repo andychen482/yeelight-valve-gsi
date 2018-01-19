@@ -3,6 +3,7 @@ from yeelight import Bulb
 import sys
 import time
 import json
+import configparser
 
 
 class MyServer(HTTPServer):
@@ -64,16 +65,18 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             print('player health: %s' % player_health)
         
     def get_round_phase(self, payload):
-        if 'round' in payload and 'phase' in payload['round']:
-            return payload['round']['phase']
-        else:
-            return None
+        if usePhase == True:
+            if 'round' in payload and 'phase' in payload['round']:
+                return payload['round']['phase']
+            else:
+                return None
             
     def get_round_bomb(self, payload):
-        if 'round' in payload and 'bomb' in payload['round']:
-            return payload['round']['bomb']
-        else:
-            return None
+        if useBomb == True:
+            if 'round' in payload and 'bomb' in payload['round']:
+                return payload['round']['bomb']
+            else:
+                return None
             
     def get_player_state(self, payload):
         if 'player' in payload and 'state' in payload['player']:
@@ -95,15 +98,19 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 server = MyServer(('localhost', 3000), MyRequestHandler)
 server.init_state()
 
-address = input("Enter the lamp's IP address: ")
-print('Initializing Yeelight')
+config = configparser.ConfigParser()
+config.read('config.ini')
+bulb1 = config.get('lamp','ip')
+usePhase = config.getboolean('options','round phase colors')
+useBomb = config.getboolean('options','c4 status colors')
+useHealth = config.getboolean('options','health colors')
 
-bulb = Bulb(address)
+print('Initializing Yeelight')
+bulb = Bulb(bulb1)
 bulb.turn_on()
 bulb.start_music()
 bulb.set_rgb(0, 0, 255)
 bulb.set_brightness(100)
-
 print(time.asctime(), '-', 'GSI running')
 
 try:
