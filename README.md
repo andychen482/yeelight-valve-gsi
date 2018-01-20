@@ -20,8 +20,8 @@ Copy gamestate_integration_yeelight.cfg to your CSGO/cfg directory. Run gsi.py a
 - [ ] Multiple lamp support
 
 ## Credits
-Gratefully using the [Yeelight python library](https://github.com/skorokithakis/python-yeelight/) by Stavros Korokithakis.
-Copyright (c) 2016, Stavros Korokithakis
+Gratefully using the [Yeelight python library](https://github.com/skorokithakis/python-yeelight/) by Stavros Korokithakis.  
+Copyright (c) 2016, Stavros Korokithakis  
 All rights reserved.
 
 ## License
