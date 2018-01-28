@@ -149,9 +149,9 @@ config.read('config.ini')
 bulb1 = config.get('lamps','ip1')
 bulb2 = config.get('lamps','ip2')
 bulb3 = config.get('lamps','ip3')
-usePhase = config.getboolean('options','round phase colors')
-useBomb = config.getboolean('options','c4 status colors')
-useHealth = config.getboolean('options','health colors')
+usePhase = config.getboolean('csgo settings','round phase colors')
+useBomb = config.getboolean('csgo settings','c4 status colors')
+useHealth = config.getboolean('csgo settings','health colors')
 
 if bulb1 != '':
     print('Initializing first Yeelight')
