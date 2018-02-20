@@ -8,8 +8,7 @@ import configparser
 
 class MyServer(HTTPServer):
     def init_state(self):
-        self.daytime = None
-        self.nighttime = None
+        self.health = None
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -23,35 +22,25 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def parse_payload(self, payload):
-        daytime = self.get_daytime(payload)
-        nighttime = self.get_nighttime(payload)
-
-        if daytime != self.server.daytime:
-            self.server.daytime = daytime
-            print('Day time toggled')
-
-            bulb.set_rgb(153, 102, 255)
-            bulb.set_brightness(100)
+        health = self.get_health(payload)
+        
+        if health != self.server.health:
+            self.server.health = health
+            print('health state changed to %s' % health)
+            if health <= 500:
+                bulb.set_rgb(255, 0, 0)
+                bulb.set_brightness(100)
+            if health > 500:    
+                bulb.set_rgb(0, 255, 0)
+                bulb.set_brightness(100)
                 
-        if nighttime != self.server.nighttime:
-            self.server.nighttime = nighttime
-            print('Night time toggled')
-
-            bulb.set_rgb(255, 0, 0)
-            bulb.set_brightness(20)
             
-    def get_daytime(self, payload):
-        if 'Map' in payload and 'IsDayTime' in payload['Map']:
-            return payload['Map']['IsDayTime']
+    def get_health(self, payload):
+        if 'hero' in payload and 'health' in payload['hero']:
+            return payload['hero']['health']
         else:
             return None
-            
-    def get_nighttime(self, payload):           
-        if 'Map' in payload and 'IsNightstalker_Night' in payload['Map']:
-            return payload['Map']['IsNightstalker_Night']
-        else:
-            return None
-
+    
     def log_message(self, format, *args):
         return
 
