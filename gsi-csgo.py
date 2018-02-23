@@ -30,82 +30,29 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             self.server.round_bomb = round_bomb
             print('changed bomb status: %s' % round_bomb)
             if 'exploded' in round_bomb:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(0, 255, 0)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(0, 255, 0)
-                if bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(0, 255, 0)
+                change_light(0, 255, 0)
             if 'planted' in round_bomb:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(255, 0, 0)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(255, 0, 0)
-                if bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(255, 0, 0)
+                change_light(255, 0, 0)
             if 'defused' in round_bomb:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(0, 0, 255)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(0, 0, 255)
-                if bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(0, 0, 255)
+                change_light(0, 0, 255)
 
         if round_phase != self.server.round_phase:
             self.server.round_phase = round_phase
             print('new round phase: %s' % round_phase)
             if 'over' in round_phase:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(255, 0, 0)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(255, 0, 0)
-                if bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(255, 0, 0)
+                change_light(255, 0, 0)
             if 'live' in round_phase:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(153, 102, 255)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(153, 102, 255)
-                if bulb3bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(153, 102, 255)
+                change_light(153, 102, 255)
             if 'freezetime' in round_phase:
-                if bulb1 != '':
-                    bulb = Bulb(bulb1)
-                    bulb.set_rgb(0, 0, 255)
-                if bulb2 != '':
-                    bulb = Bulb(bulb2)
-                    bulb.set_rgb(0, 0, 255)
-                if bulb3 != '':
-                    bulb = Bulb(bulb3)
-                    bulb.set_rgb(0, 0, 255)
+                change_light(0, 0, 255)
 
         if player_health != self.server.player_health:
             self.server.player_health = player_health
             print('player health: %s' % player_health)
-            if bulb1 != '':
-                bulb = Bulb(bulb1)
-                bulb.set_rgb(0xff0000 * player_health)
-            if bulb2 != '':
-                bulb = Bulb(bulb2)
-                bulb.set_rgb(0xff0000 * player_health)
-            if bulb3 != '':
-                bulb = Bulb(bulb3)
-                bulb.set_rgb(0xff0000 * player_health)
+            for bulbn in (bulb1, bulb2, bulb3):
+                if bulbn != '':
+                    bulb = Bulb(bulbn)
+                    bulb.set_rgb(0xff0000 * player_health)
 
     def get_round_phase(self, payload):
         if usePhase == True:
@@ -126,6 +73,12 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             return payload['player']['state']['health']
         else:
             return None
+    
+    def change_light(r, g, b):
+        for bulbn in (bulb1, bulb2, bulb3):
+          if bulbn != '':
+               bulb = Bulb(bulbn)
+               bulb.set_rgb(r, g, b)
 
     def log_message(self, format, *args):
         return
@@ -142,29 +95,14 @@ usePhase = config.getboolean('csgo settings','round phase colors')
 useBomb = config.getboolean('csgo settings','c4 status colors')
 useHealth = config.getboolean('csgo settings','health colors')
 
-if bulb1 != '':
-    print('Initializing first Yeelight')
-    bulb = Bulb(bulb1)
-    bulb.turn_on()
-    bulb.start_music()
-    bulb.set_rgb(0, 0, 255)
-    bulb.set_brightness(100)
-
-if bulb2 != '':
-    print('Initializing second Yeelight')
-    bulb = Bulb(bulb2)
-    bulb.turn_on()
-    bulb.start_music()
-    bulb.set_rgb(0, 0, 255)
-    bulb.set_brightness(100)
-
-if bulb3 != '':
-    print('Initializing third Yeelight')
-    bulb = Bulb(bulb3)
-    bulb.turn_on()
-    bulb.start_music()
-    bulb.set_rgb(0, 0, 255)
-    bulb.set_brightness(100)
+for bulbn in (bulb1, bulb2, bulb3):
+    if bulbn != '':
+        print('Initializing Yeelight at %s' % bulbn)
+        bulb = Bulb(bulbn)
+        bulb.turn_on()
+        bulb.start_music()
+        bulb.set_rgb(0, 0, 255)
+        bulb.set_brightness(100)
 
 print(time.asctime(), '-', 'GSI running - CTRL+C to stop')
 try:
@@ -174,14 +112,10 @@ except (KeyboardInterrupt, SystemExit):
 
 server.server_close()
 
-if bulb1 != '':
-    bulb = Bulb(bulb1)
-    bulb.stop_music
-if bulb2 != '':
-    bulb = Bulb(bulb2)
-    bulb.stop_music
-if bulb3 != '':
-    bulb = Bulb(bulb3)
-    bulb.stop_music
+for bulbn in (bulb1, bulb2, bulb3):
+    if bulbn != '':
+        bulb = Bulb(bulbn)
+        bulb.stop_music
+
 
 print(time.asctime(), '-', 'GSI server stopped')
