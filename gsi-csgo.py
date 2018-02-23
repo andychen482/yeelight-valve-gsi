@@ -83,9 +83,10 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
+print('Initializing yeelight-gsi by davidramiro')
 server = MyServer(('localhost', 3000), MyRequestHandler)
 server.init_state()
-
+print('Reading config...')
 config = configparser.ConfigParser()
 config.read('config.ini')
 bulb1 = config.get('lamps','ip1')
@@ -104,7 +105,7 @@ for bulbn in (bulb1, bulb2, bulb3):
         bulb.set_rgb(0, 0, 255)
         bulb.set_brightness(100)
 
-print(time.asctime(), '-', 'GSI running - CTRL+C to stop')
+print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
 try:
     server.serve_forever()
 except (KeyboardInterrupt, SystemExit):
@@ -118,4 +119,5 @@ for bulbn in (bulb1, bulb2, bulb3):
         bulb.stop_music
 
 
-print(time.asctime(), '-', 'GSI server stopped')
+print(time.asctime(), '-', 'yeelight-gsi is running')
+print('Press CTRL+C to stop')
