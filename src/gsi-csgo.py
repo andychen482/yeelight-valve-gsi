@@ -110,14 +110,9 @@ try:
     server.serve_forever()
 except (KeyboardInterrupt, SystemExit):
     pass
-
 server.server_close()
-
 for bulbn in (bulb1, bulb2, bulb3):
     if bulbn != '':
         bulb = Bulb(bulbn)
         bulb.stop_music
-
-
 print(time.asctime(), '-', 'yeelight-gsi is running')
-print('Press CTRL+C to stop')

@@ -21,42 +21,49 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 
     def parse_payload(self, payload):
         health = self.get_health(payload)
-
         if health != self.server.health:
             self.server.health = health
             print('health state changed to %s' % health)
-            bulb.set_rgb(0xff0000 * health)
+            for bulbn in (bulb1, bulb2, bulb3):
+                if bulbn != '':
+                    bulb = Bulb(bulbn)
+                    bulb.set_rgb(0xff0000 * health)
 
     def get_health(self, payload):
         if 'hero' in payload and 'health_percent' in payload['hero']:
             return payload['hero']['health_percent']
         else:
             return None
-
+    
     def log_message(self, format, *args):
         return
 
+print('Initializing yeelight-gsi by davidramiro')
 server = MyServer(('localhost', 3000), MyRequestHandler)
 server.init_state()
-
+print('Reading config...')
 config = configparser.ConfigParser()
 config.read('config.ini')
 bulb1 = config.get('lamps','ip1')
+bulb2 = config.get('lamps','ip2')
+bulb3 = config.get('lamps','ip3')
+for bulbn in (bulb1, bulb2, bulb3):
+    if bulbn != '':
+        print('Initializing Yeelight at %s' % bulbn)
+        bulb = Bulb(bulbn)
+        bulb.turn_on()
+        bulb.start_music()
+        bulb.set_rgb(0, 0, 255)
+        bulb.set_brightness(100)
 
-print('Initializing Yeelight')
-bulb = Bulb(bulb1)
-bulb.turn_on()
-bulb.start_music()
-bulb.set_rgb(0, 0, 255)
-bulb.set_brightness(100)
-
-print(time.asctime(), '-', 'GSI running - CTRL+C to stop')
+print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
 try:
     server.serve_forever()
 except (KeyboardInterrupt, SystemExit):
     pass
-
 server.server_close()
-bulb.stop_music
-
-print(time.asctime(), '-', 'GSI server stopped')
+for bulbn in (bulb1, bulb2, bulb3):
+    if bulbn != '':
+        bulb = Bulb(bulbn)
+        bulb.stop_music
+print(time.asctime(), '-', 'yeelight-gsi is running')
