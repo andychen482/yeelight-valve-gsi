@@ -5,12 +5,12 @@ import time
 import json
 import configparser
 
-
 class MyServer(HTTPServer):
     def init_state(self):
         self.round_phase = None
         self.round_bomb = None
         self.player_health = None
+        self.weapon_ammo = None
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -20,11 +20,12 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.send_response(200)
         self.end_headers()
-
+                
     def parse_payload(self, payload):
         round_phase = self.get_round_phase(payload)
         round_bomb = self.get_round_bomb(payload)
         player_health = self.get_player_health(payload)
+        weapon_ammo = self.get_weapon_ammo(payload)
 
         if round_bomb != self.server.round_bomb:
             self.server.round_bomb = round_bomb
@@ -49,10 +50,18 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         if player_health != self.server.player_health:
             self.server.player_health = player_health
             print('player health: %s' % player_health)
-            for bulbn in (bulb1, bulb2, bulb3):
-                if bulbn != '':
-                    bulb = Bulb(bulbn)
-                    bulb.set_rgb(0xff0000 * player_health)
+            if player_health <= 50:
+                change_light(255, 255, 0)
+            if player_health <= 20:
+                change_light(255, 51, 0)
+            if player_health <= 10:
+                change_light(255, 0, 0)
+        
+        if weapon_ammo != self.server.weapon_ammo:
+            self.server.weapon_ammo = weapon_ammo
+            print('weapon ammo: %s' % weapon_ammo)
+            if player_health <= 5:
+                change_light(255, 255, 255)
 
     def get_round_phase(self, payload):
         if usePhase == True:
@@ -69,20 +78,28 @@ class MyRequestHandler(BaseHTTPRequestHandler):
                 return None
 
     def get_player_health(self, payload):
-        if 'player' in payload and 'state' in payload['player']:
-            return payload['player']['state']['health']
-        else:
-            return None
-    
-    def change_light(r, g, b):
-        for bulbn in (bulb1, bulb2, bulb3):
-          if bulbn != '':
-               bulb = Bulb(bulbn)
-               bulb.set_rgb(r, g, b)
+        if useHealth == True:
+            if 'player' in payload and 'state' in payload['player']:
+                return payload['player']['state']['health']
+            else:
+                return None
+                
+    def get_weapon_ammo(self, payload):
+        if useAmmo == True:
+            if 'player_weapons' in payload:
+                return payload['player_weapons']['player']['weapons']['weapon_3']['ammo_clip']
+            else:
+                return None
 
     def log_message(self, format, *args):
         return
 
+def change_light(r, g, b):
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.set_rgb(r, g, b)
+         
 print('Initializing yeelight-gsi by davidramiro')
 server = MyServer(('localhost', 3000), MyRequestHandler)
 server.init_state()
@@ -95,6 +112,7 @@ bulb3 = config.get('lamps','ip3')
 usePhase = config.getboolean('csgo settings','round phase colors')
 useBomb = config.getboolean('csgo settings','c4 status colors')
 useHealth = config.getboolean('csgo settings','health colors')
+useAmmo = config.getboolean('csgo settings','ammo colors')
 
 for bulbn in (bulb1, bulb2, bulb3):
     if bulbn != '':

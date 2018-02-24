@@ -5,7 +5,6 @@ import time
 import json
 import configparser
 
-
 class MyServer(HTTPServer):
     def init_state(self):
         self.health = None
@@ -27,7 +26,12 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             for bulbn in (bulb1, bulb2, bulb3):
                 if bulbn != '':
                     bulb = Bulb(bulbn)
-                    bulb.set_rgb(0xff0000 * health)
+                    if health <= 50:
+                        bulb.set_rgb(255, 255, 0)
+                    if health <= 20:
+                        bulb.set_rgb(255, 51, 0)
+                    if health <= 10:
+                        bulb.set_rgb(255, 0, 0)
 
     def get_health(self, payload):
         if 'hero' in payload and 'health_percent' in payload['hero']:
