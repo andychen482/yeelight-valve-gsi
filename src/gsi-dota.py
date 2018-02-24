@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from yeelight import Bulb
+from yeelight import *
 import sys
 import time
 import json
@@ -23,15 +23,15 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         if health != self.server.health:
             self.server.health = health
             print('health state changed to %s' % health)
-            for bulbn in (bulb1, bulb2, bulb3):
-                if bulbn != '':
-                    bulb = Bulb(bulbn)
-                    if health <= 50:
-                        bulb.set_rgb(255, 255, 0)
-                    if health <= 20:
-                        bulb.set_rgb(255, 51, 0)
-                    if health <= 10:
-                        bulb.set_rgb(255, 0, 0)
+            if 100 >= health > 50:
+                change_light(0, 255, 0)
+            if health <= 50:
+                change_light(255, 255, 0)
+            if health <= 20:
+                change_light(255, 51, 0)
+            if health <= 10:
+                change_light(255, 0, 0)
+                flash()
 
     def get_health(self, payload):
         if 'hero' in payload and 'health_percent' in payload['hero']:
@@ -41,6 +41,23 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     
     def log_message(self, format, *args):
         return
+        
+def flash():
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.start_flow(Flow(3, Flow.actions.recover, flashflow))
+            
+def change_light(r, g, b):
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.set_rgb(r, g, b)
+
+flashflow = [
+        RGBTransition(255, 0, 0, duration=100, brightness=100),
+        RGBTransition(255, 153, 0, duration=100, brightness=100),
+    ]
 
 print('Initializing yeelight-gsi by davidramiro')
 server = MyServer(('localhost', 3000), MyRequestHandler)
@@ -51,6 +68,7 @@ config.read('config.ini')
 bulb1 = config.get('lamps','ip1')
 bulb2 = config.get('lamps','ip2')
 bulb3 = config.get('lamps','ip3')
+
 for bulbn in (bulb1, bulb2, bulb3):
     if bulbn != '':
         print('Initializing Yeelight at %s' % bulbn)
