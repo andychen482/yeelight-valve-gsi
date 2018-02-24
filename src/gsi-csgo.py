@@ -1,5 +1,5 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
-from yeelight import Bulb
+from yeelight import *
 import sys
 import time
 import json
@@ -30,10 +30,8 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         if round_bomb != self.server.round_bomb:
             self.server.round_bomb = round_bomb
             print('changed bomb status: %s' % round_bomb)
-            if 'exploded' in round_bomb:
-                change_light(0, 255, 0)
             if 'planted' in round_bomb:
-                change_light(255, 0, 0)
+                police()
             if 'defused' in round_bomb:
                 change_light(0, 0, 255)
 
@@ -55,7 +53,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             if player_health <= 20:
                 change_light(255, 51, 0)
             if player_health <= 10:
-                change_light(255, 0, 0)
+               alarm()
         
         if weapon_ammo != self.server.weapon_ammo:
             self.server.weapon_ammo = weapon_ammo
@@ -99,6 +97,18 @@ def change_light(r, g, b):
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.set_rgb(r, g, b)
+            
+def alarm():
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.start_flow(Flow(2, Flow.actions.recover, alarmflow))
+
+def police():
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.start_flow(Flow(40, Flow.actions.recover, bombflow))
          
 print('Initializing yeelight-gsi by davidramiro')
 server = MyServer(('localhost', 3000), MyRequestHandler)
@@ -113,6 +123,15 @@ usePhase = config.getboolean('csgo settings','round phase colors')
 useBomb = config.getboolean('csgo settings','c4 status colors')
 useHealth = config.getboolean('csgo settings','health colors')
 useAmmo = config.getboolean('csgo settings','ammo colors')
+
+alarmflow = [
+        HSVTransition(0, 100, duration=250, brightness=100),
+        HSVTransition(0, 100, duration=250, brightness=60),
+    ]
+bombflow = [
+        RGBTransition(255, 0, 0, duration=900, brightness=100),
+        RGBTransition(255, 153, 0, duration=100, brightness=100),
+    ]
 
 for bulbn in (bulb1, bulb2, bulb3):
     if bulbn != '':

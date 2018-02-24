@@ -16,8 +16,8 @@ Copy the `gamestate_integration_yeelight.cfg` from the `cfg` directory to the co
 - [x] Round state colors
 - [x] Bomb state colors
 - [X] Multiple lamp support
-- [X] Player health colors
-- [ ] Bomb flashing
+- [X] Player health colors and warning
+- [X] Bomb flashing
 - [ ] Ammo warning
 
 ### Dota 2
