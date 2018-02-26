@@ -5,6 +5,10 @@ import time
 import json
 import configparser
 
+flashFlow = [
+        RGBTransition(255, 0, 0, duration=100, brightness=100),
+        RGBTransition(255, 153, 0, duration=100, brightness=100),
+    ]
 class MyServer(HTTPServer):
     def init_state(self):
         self.health = None
@@ -24,13 +28,13 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             self.server.health = health
             print('health state changed to %s' % health)
             if 100 >= health > 50:
-                change_light(0, 255, 0)
+                changeLight(0, 255, 0)
             if health <= 50:
-                change_light(255, 255, 0)
+                changeLight(255, 255, 0)
             if health <= 20:
-                change_light(255, 51, 0)
+                changeLight(255, 51, 0)
             if health <= 10:
-                change_light(255, 0, 0)
+                changeLight(255, 0, 0)
                 flash()
 
     def get_health(self, payload):
@@ -46,46 +50,47 @@ def flash():
     for bulbn in (bulb1, bulb2, bulb3):
         if bulbn != '':
             bulb = Bulb(bulbn)
-            bulb.start_flow(Flow(3, Flow.actions.recover, flashflow))
+            bulb.start_flow(Flow(3, Flow.actions.recover, flashFlow))
             
-def change_light(r, g, b):
+def changeLight(r, g, b):
     for bulbn in (bulb1, bulb2, bulb3):
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.set_rgb(r, g, b)
 
-flashflow = [
-        RGBTransition(255, 0, 0, duration=100, brightness=100),
-        RGBTransition(255, 153, 0, duration=100, brightness=100),
-    ]
+def readConfig():
+    print('Reading config...')
+    global bulb1,bulb2,bulb3
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    bulb1 = config.get('lamps','ip1')
+    bulb2 = config.get('lamps','ip2')
+    bulb3 = config.get('lamps','ip3')
 
-print('Initializing yeelight-gsi by davidramiro')
-server = MyServer(('localhost', 3000), MyRequestHandler)
-server.init_state()
-print('Reading config...')
-config = configparser.ConfigParser()
-config.read('config.ini')
-bulb1 = config.get('lamps','ip1')
-bulb2 = config.get('lamps','ip2')
-bulb3 = config.get('lamps','ip3')
+def main():
+    print('Welcome to yeelight-gsi by davidramiro')
+    readConfig()
+    print('Initializing...')
+    server = MyServer(('localhost', 3000), MyRequestHandler)
+    server.init_state()
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            print('Initializing Yeelight at %s' % bulbn)
+            bulb = Bulb(bulbn)
+            bulb.turn_on()
+            bulb.start_music()
+            bulb.set_rgb(0, 0, 255)
+            bulb.set_brightness(100)
+    print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
+    try:
+        server.serve_forever()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    server.server_close()
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.stop_music
+    print(time.asctime(), '-', 'yeelight-gsi is running')
 
-for bulbn in (bulb1, bulb2, bulb3):
-    if bulbn != '':
-        print('Initializing Yeelight at %s' % bulbn)
-        bulb = Bulb(bulbn)
-        bulb.turn_on()
-        bulb.start_music()
-        bulb.set_rgb(0, 0, 255)
-        bulb.set_brightness(100)
-
-print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
-try:
-    server.serve_forever()
-except (KeyboardInterrupt, SystemExit):
-    pass
-server.server_close()
-for bulbn in (bulb1, bulb2, bulb3):
-    if bulbn != '':
-        bulb = Bulb(bulbn)
-        bulb.stop_music
-print(time.asctime(), '-', 'yeelight-gsi is running')
+main()

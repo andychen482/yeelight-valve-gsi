@@ -5,6 +5,15 @@ import time
 import json
 import configparser
 
+alarmFlow = [
+    HSVTransition(0, 100, duration=250, brightness=100),
+    HSVTransition(0, 100, duration=250, brightness=60),
+]
+bombFlow = [
+    RGBTransition(255, 0, 0, duration=900, brightness=100),
+    RGBTransition(255, 153, 0, duration=100, brightness=100),
+]
+
 class MyServer(HTTPServer):
     def init_state(self):
         self.round_phase = None
@@ -33,25 +42,25 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             if 'planted' in round_bomb:
                 police()
             if 'defused' in round_bomb:
-                change_light(0, 0, 255)
+                changeLight(0, 0, 255)
 
         if round_phase != self.server.round_phase:
             self.server.round_phase = round_phase
             print('new round phase: %s' % round_phase)
             if 'over' in round_phase:
-                change_light(255, 0, 0)
+                changeLight(255, 0, 0)
             if 'live' in round_phase:
-                change_light(153, 102, 255)
+                changeLight(153, 102, 255)
             if 'freezetime' in round_phase:
-                change_light(0, 0, 255)
+                changeLight(0, 0, 255)
 
         if player_health != self.server.player_health:
             self.server.player_health = player_health
             print('player health: %s' % player_health)
             if player_health <= 50:
-                change_light(255, 255, 0)
+                changeLight(255, 255, 0)
             if player_health <= 20:
-                change_light(255, 51, 0)
+                changeLight(255, 51, 0)
             if player_health <= 10:
                alarm()
         
@@ -59,7 +68,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             self.server.weapon_ammo = weapon_ammo
             print('weapon ammo: %s' % weapon_ammo)
             if player_health <= 5:
-                change_light(255, 255, 255)
+                changeLight(255, 255, 255)
 
     def get_round_phase(self, payload):
         if usePhase == True:
@@ -92,7 +101,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
-def change_light(r, g, b):
+def changeLight(r, g, b):
     for bulbn in (bulb1, bulb2, bulb3):
         if bulbn != '':
             bulb = Bulb(bulbn)
@@ -102,54 +111,53 @@ def alarm():
     for bulbn in (bulb1, bulb2, bulb3):
         if bulbn != '':
             bulb = Bulb(bulbn)
-            bulb.start_flow(Flow(2, Flow.actions.recover, alarmflow))
+            bulb.start_flow(Flow(2, Flow.actions.recover, alarmFlow))
 
 def police():
     for bulbn in (bulb1, bulb2, bulb3):
         if bulbn != '':
             bulb = Bulb(bulbn)
-            bulb.start_flow(Flow(40, Flow.actions.recover, bombflow))
-         
-print('Initializing yeelight-gsi by davidramiro')
-server = MyServer(('localhost', 3000), MyRequestHandler)
-server.init_state()
-print('Reading config...')
-config = configparser.ConfigParser()
-config.read('config.ini')
-bulb1 = config.get('lamps','ip1')
-bulb2 = config.get('lamps','ip2')
-bulb3 = config.get('lamps','ip3')
-usePhase = config.getboolean('csgo settings','round phase colors')
-useBomb = config.getboolean('csgo settings','c4 status colors')
-useHealth = config.getboolean('csgo settings','health colors')
-useAmmo = config.getboolean('csgo settings','ammo colors')
+            bulb.start_flow(Flow(40, Flow.actions.recover, bombFlow))
 
-alarmflow = [
-        HSVTransition(0, 100, duration=250, brightness=100),
-        HSVTransition(0, 100, duration=250, brightness=60),
-    ]
-bombflow = [
-        RGBTransition(255, 0, 0, duration=900, brightness=100),
-        RGBTransition(255, 153, 0, duration=100, brightness=100),
-    ]
-
-for bulbn in (bulb1, bulb2, bulb3):
-    if bulbn != '':
-        print('Initializing Yeelight at %s' % bulbn)
-        bulb = Bulb(bulbn)
-        bulb.turn_on()
-        bulb.start_music()
-        bulb.set_rgb(0, 0, 255)
-        bulb.set_brightness(100)
-
-print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
-try:
-    server.serve_forever()
-except (KeyboardInterrupt, SystemExit):
-    pass
-server.server_close()
-for bulbn in (bulb1, bulb2, bulb3):
-    if bulbn != '':
-        bulb = Bulb(bulbn)
-        bulb.stop_music
-print(time.asctime(), '-', 'yeelight-gsi is running')
+def readConfig():
+    print('Reading config...')
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    global bulb1,bulb2,bulb3,usePhase,useBomb,useHealth,useAmmo
+    bulb1 = config.get('lamps','ip1')
+    bulb2 = config.get('lamps','ip2')
+    bulb3 = config.get('lamps','ip3')
+    usePhase = config.getboolean('csgo settings','round phase colors')
+    useBomb = config.getboolean('csgo settings','c4 status colors')
+    useHealth = config.getboolean('csgo settings','health colors')
+    useAmmo = config.getboolean('csgo settings','ammo colors')            
+            
+def main():
+    print('Welcome to yeelight-gsi by davidramiro')
+    readConfig()
+    print('Initializing...')
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            print('Initializing Yeelight at %s' % bulbn)
+            bulb = Bulb(bulbn)
+            bulb.turn_on()
+            bulb.start_music()
+            bulb.set_rgb(0, 0, 255)
+            bulb.set_brightness(100)
+    server = MyServer(('localhost', 3000), MyRequestHandler)
+    server.init_state()
+    print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
+    try:
+        server.serve_forever()
+    except (KeyboardInterrupt, SystemExit):
+        pass
+    server.server_close()
+    for bulbn in (bulb1, bulb2, bulb3):
+        if bulbn != '':
+            bulb = Bulb(bulbn)
+            bulb.stop_music
+            bulb.set_rgb(255,255,255)
+            bulb.set_brightness(100)
+    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
+    
+main()
