@@ -91,6 +91,6 @@ def main():
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.stop_music
-    print(time.asctime(), '-', 'yeelight-gsi is running')
+    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
 
 main()
