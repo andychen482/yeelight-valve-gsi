@@ -2,10 +2,13 @@
 Changing light scenes on Yeelight smart lamps for different in-game scenarios in Valve games using game state integration.
 
 ## Prerequisites
+- Windows (standalone) or Linux (python3 installed)
 - CS:GO or Dota 2 on Steam
 - Any Yeelight/Xiaomi/Mijia Wi-Fi lamp
 
 ## Usage
+* Windows: Download the latest  binary from [releases](https://github.com/davidramiro/yeelight-gsi/releases)
+* Linux: Clone the repo.
 To control your Yeelights via local network, you need to enable the [developer mode](https://www.yeelight.com/en_US/developer) (also called LAN mode) on your lamps in the Yeelight app.
 Set your lamp's IP addresses in the config.ini.
 Copy the `gamestate_integration_yeelight.cfg` from the `cfg` directory to the corresponding game folder. For CS:GO that would be `gamedir/csgo/cfg` and for Dota 2 it goes into `gamedir/game/dota/cfg/gamestate_integration`. Run your `gsi-xxxx` executable of choice and launch the game.
