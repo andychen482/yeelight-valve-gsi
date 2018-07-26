@@ -13,6 +13,8 @@ bombFlow = [
     RGBTransition(255, 0, 0, duration=900, brightness=100),
     RGBTransition(255, 153, 0, duration=100, brightness=100),
 ]
+bulbs = []
+
 
 class MyServer(HTTPServer):
     def init_state(self):
@@ -20,6 +22,7 @@ class MyServer(HTTPServer):
         self.round_bomb = None
         self.player_health = None
         self.weapon_ammo = None
+
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -29,7 +32,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         self.send_header('Content-type', 'text/html')
         self.send_response(200)
         self.end_headers()
-                
+
     def parse_payload(self, payload):
         round_phase = self.get_round_phase(payload)
         round_bomb = self.get_round_bomb(payload)
@@ -62,8 +65,8 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             if player_health <= 20:
                 changeLight(255, 51, 0)
             if player_health <= 10:
-               alarm()
-        
+                alarm()
+
         if weapon_ammo != self.server.weapon_ammo:
             self.server.weapon_ammo = weapon_ammo
             print('weapon ammo: %s' % weapon_ammo)
@@ -90,7 +93,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
                 return payload['player']['state']['health']
             else:
                 return None
-                
+
     def get_weapon_ammo(self, payload):
         if useAmmo == True:
             if 'player_weapons' in payload:
@@ -101,42 +104,42 @@ class MyRequestHandler(BaseHTTPRequestHandler):
     def log_message(self, format, *args):
         return
 
+
 def changeLight(r, g, b):
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.set_rgb(r, g, b)
-            
+
+
 def alarm():
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.start_flow(Flow(2, Flow.actions.recover, alarmFlow))
 
+
 def police():
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.start_flow(Flow(40, Flow.actions.recover, bombFlow))
 
-def readConfig():
+
+def main():
+    print('Welcome to yeelight-gsi by davidramiro')
     print('Reading config...')
     config = configparser.ConfigParser()
     config.read('config.ini')
-    global bulb1,bulb2,bulb3,usePhase,useBomb,useHealth,useAmmo
-    bulb1 = config.get('lamps','ip1')
-    bulb2 = config.get('lamps','ip2')
-    bulb3 = config.get('lamps','ip3')
-    usePhase = config.getboolean('csgo settings','round phase colors')
-    useBomb = config.getboolean('csgo settings','c4 status colors')
-    useHealth = config.getboolean('csgo settings','health colors')
-    useAmmo = config.getboolean('csgo settings','ammo colors')            
-            
-def main():
-    print('Welcome to yeelight-gsi by davidramiro')
-    readConfig()
+    bulb_count = int(config.get('general', 'Lamp Count'))
+    for n in range(1, (bulb_count + 1)):
+        bulbs.append(config.get(str(n), 'ip'))
+    usePhase = config.getboolean('csgo settings', 'round phase colors')
+    useBomb = config.getboolean('csgo settings', 'c4 status colors')
+    useHealth = config.getboolean('csgo settings', 'health colors')
+    useAmmo = config.getboolean('csgo settings', 'ammo colors')
     print('Initializing...')
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             print('Initializing Yeelight at %s' % bulbn)
             bulb = Bulb(bulbn)
@@ -152,12 +155,13 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         pass
     server.server_close()
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.stop_music
-            bulb.set_rgb(255,255,255)
+            bulb.set_rgb(255, 255, 255)
             bulb.set_brightness(100)
     print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
-    
+
+
 main()

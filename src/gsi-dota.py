@@ -6,12 +6,16 @@ import json
 import configparser
 
 flashFlow = [
-        RGBTransition(255, 0, 0, duration=100, brightness=100),
-        RGBTransition(255, 153, 0, duration=100, brightness=100),
-    ]
+    RGBTransition(255, 0, 0, duration=100, brightness=100),
+    RGBTransition(255, 153, 0, duration=100, brightness=100),
+]
+bulbs = []
+
+
 class MyServer(HTTPServer):
     def init_state(self):
         self.health = None
+
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
@@ -42,38 +46,37 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             return payload['hero']['health_percent']
         else:
             return None
-    
+
     def log_message(self, format, *args):
         return
-        
+
+
 def flash():
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.start_flow(Flow(3, Flow.actions.recover, flashFlow))
-            
+
+
 def changeLight(r, g, b):
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.set_rgb(r, g, b)
 
-def readConfig():
-    print('Reading config...')
-    global bulb1,bulb2,bulb3
-    config = configparser.ConfigParser()
-    config.read('config.ini')
-    bulb1 = config.get('lamps','ip1')
-    bulb2 = config.get('lamps','ip2')
-    bulb3 = config.get('lamps','ip3')
 
 def main():
     print('Welcome to yeelight-gsi by davidramiro')
-    readConfig()
+    print('Reading config...')
+    config = configparser.ConfigParser()
+    config.read('config.ini')
+    bulb_count = int(config.get('general', 'Lamp Count'))
+    for n in range(1, (bulb_count + 1)):
+        bulbs.append(config.get(str(n), 'ip'))
     print('Initializing...')
     server = MyServer(('localhost', 3000), MyRequestHandler)
     server.init_state()
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             print('Initializing Yeelight at %s' % bulbn)
             bulb = Bulb(bulbn)
@@ -87,10 +90,11 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         pass
     server.server_close()
-    for bulbn in (bulb1, bulb2, bulb3):
+    for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.stop_music
     print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
+
 
 main()
