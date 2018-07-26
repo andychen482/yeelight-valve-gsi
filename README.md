@@ -24,9 +24,10 @@ Changing light scenes on Yeelight smart lamps for different in-game scenarios in
 - [ ] Ammo warning
 
 ### Dota 2
-- [X] Player health scenes
+- [X] Player health colors
+- [X] More player state scenes (`IsSilenced, IsStunned, IsHexed, ...`)
 - [ ] Ult/Ability scenes (`CanCast, IsActive, Cooldown, ...`)
-- [ ] More player state scenes (`IsSilenced, IsStunned, HasDebuff, IsHexed, ...`)
+
 *Note: I'm not a Dota player myself so I don't know what features might be desirable. Feel free to get in touch via the issue section for suggestions. Same for CS:GO of course.*
 
 ## Credits
