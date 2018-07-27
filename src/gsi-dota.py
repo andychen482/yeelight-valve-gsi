@@ -17,12 +17,17 @@ bulbs = []
 
 
 class MyServer(HTTPServer):
+    # prepare checked items for http server
     def init_state(self):
         self.health = None
+        self.silenced = None
+        self.stunned = None
+        self.hexed = None
 
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
+        # receive payload from game
         length = int(self.headers['Content-Length'])
         body = self.rfile.read(length).decode('utf-8')
         self.parse_payload(json.loads(body))
@@ -35,6 +40,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         silenced = self.get_silenced(payload)
         stunned = self.get_stunned(payload)
         hexed = self.get_hexed(payload)
+        # compare and check if payload changed
         if health != self.server.health:
             self.server.health = health
             print('health state changed to %s' % health)
@@ -91,6 +97,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 
 
 def flash():
+    # let the bulbs blink 3 times with critical_flash colors
     for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
@@ -98,6 +105,7 @@ def flash():
 
 
 def warn():
+    # let the bulbs blink 3 times with warning_flash colors
     for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
@@ -105,6 +113,7 @@ def warn():
 
 
 def changeLight(r, g, b):
+    # loop through bulbs with new rgb value
     for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
@@ -116,6 +125,7 @@ def main():
     print('Reading config...')
     config = configparser.ConfigParser()
     config.read('config.ini')
+    # let the following variables be callable outside main()
     global warn_low, warn_stun, warn_slcd, warn_hex
     warn_low = config.getboolean('dota settings', 'low hp warning')
     warn_stun = config.getboolean('dota settings', 'stunned warning')
@@ -125,22 +135,25 @@ def main():
     for n in range(1, (bulb_count + 1)):
         bulbs.append(config.get(str(n), 'ip'))
     print('Initializing...')
-    server = MyServer(('localhost', 3000), MyRequestHandler)
-    server.init_state()
     for bulbn in bulbs:
         if bulbn != '':
             print('Initializing Yeelight at %s' % bulbn)
             bulb = Bulb(bulbn)
             bulb.turn_on()
+            # turn on music mode on the yeelights for better latency
             bulb.start_music()
             bulb.set_rgb(0, 0, 255)
             bulb.set_brightness(100)
+    # start up the listening server
+    server = MyServer(('localhost', 3000), MyRequestHandler)
+    server.init_state()
     print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
     try:
         server.serve_forever()
     except (KeyboardInterrupt, SystemExit):
         pass
     server.server_close()
+    # turn off music mode
     for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)

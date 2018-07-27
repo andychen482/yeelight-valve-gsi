@@ -17,6 +17,7 @@ bulbs = []
 
 
 class MyServer(HTTPServer):
+    # prepare checked items for http server
     def init_state(self):
         self.round_phase = None
         self.round_bomb = None
@@ -26,6 +27,7 @@ class MyServer(HTTPServer):
 
 class MyRequestHandler(BaseHTTPRequestHandler):
     def do_POST(self):
+        # receive payload from game
         length = int(self.headers['Content-Length'])
         body = self.rfile.read(length).decode('utf-8')
         self.parse_payload(json.loads(body))
@@ -39,6 +41,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         player_health = self.get_player_health(payload)
         weapon_ammo = self.get_weapon_ammo(payload)
 
+        # compare and check if payload changed
         if round_bomb != self.server.round_bomb:
             self.server.round_bomb = round_bomb
             print('changed bomb status: %s' % round_bomb)
@@ -106,6 +109,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
 
 
 def changeLight(r, g, b):
+    # loop through bulbs with new rgb value
     for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
@@ -123,6 +127,7 @@ def police():
     for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
+            # pulsate 40 times for 1 second each to show bomb timer
             bulb.start_flow(Flow(40, Flow.actions.recover, bombFlow))
 
 
@@ -144,9 +149,11 @@ def main():
             print('Initializing Yeelight at %s' % bulbn)
             bulb = Bulb(bulbn)
             bulb.turn_on()
+            # turn on music mode on the yeelights for better latency
             bulb.start_music()
             bulb.set_rgb(0, 0, 255)
             bulb.set_brightness(100)
+    # start up the listening server
     server = MyServer(('localhost', 3000), MyRequestHandler)
     server.init_state()
     print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
@@ -155,6 +162,7 @@ def main():
     except (KeyboardInterrupt, SystemExit):
         pass
     server.server_close()
+    # turn off music mode
     for bulbn in bulbs:
         if bulbn != '':
             bulb = Bulb(bulbn)
