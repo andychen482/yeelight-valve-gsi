@@ -46,7 +46,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             print('health state changed to %s' % health)
             hp_g = int(round(health / 100 * 255))
             hp_r = int(round((255 * (1 - health / 100))))
-            changeLight(hp_r, hp_g, 0)
+            change_light(hp_r, hp_g, 0)
             if warn_low is True:
                 if health <= 15:
                     print('Critical Health!')
@@ -112,7 +112,7 @@ def warn():
             bulb.start_flow(Flow(3, Flow.actions.recover, warning_flash))
 
 
-def changeLight(r, g, b):
+def change_light(r, g, b):
     # loop through bulbs with new rgb value
     for bulbn in bulbs:
         if bulbn != '':
@@ -121,7 +121,7 @@ def changeLight(r, g, b):
 
 
 def main():
-    print('Welcome to yeelight-gsi by davidramiro')
+    print('Welcome to yeelight-valve-gsi by davidramiro')
     print('Reading config...')
     config = configparser.ConfigParser()
     config.read('config.ini')
@@ -147,7 +147,7 @@ def main():
     # start up the listening server
     server = MyServer(('localhost', 3000), MyRequestHandler)
     server.init_state()
-    print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
+    print(time.asctime(), '-', 'yeelight-valve-gsi is running - CTRL+C to stop')
     try:
         server.serve_forever()
     except (KeyboardInterrupt, SystemExit):
@@ -158,7 +158,7 @@ def main():
         if bulbn != '':
             bulb = Bulb(bulbn)
             bulb.stop_music
-    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
+    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-valve-gsi!')
 
 
 main()

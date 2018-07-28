@@ -5,11 +5,11 @@ import time
 import json
 import configparser
 
-alarmFlow = [
+alarm_flow = [
     HSVTransition(0, 100, duration=250, brightness=100),
     HSVTransition(0, 100, duration=250, brightness=60),
 ]
-bombFlow = [
+bomb_flow = [
     RGBTransition(255, 0, 0, duration=900, brightness=100),
     RGBTransition(255, 153, 0, duration=100, brightness=100),
 ]
@@ -22,7 +22,7 @@ class MyServer(HTTPServer):
         self.round_phase = None
         self.round_bomb = None
         self.player_health = None
-        self.weapon_ammo = None
+        #self.weapon_ammo = None
 
 
 class MyRequestHandler(BaseHTTPRequestHandler):
@@ -39,7 +39,7 @@ class MyRequestHandler(BaseHTTPRequestHandler):
         round_phase = self.get_round_phase(payload)
         round_bomb = self.get_round_bomb(payload)
         player_health = self.get_player_health(payload)
-        weapon_ammo = self.get_weapon_ammo(payload)
+        #weapon_ammo = self.get_weapon_ammo(payload)
 
         # compare and check if payload changed
         if round_bomb != self.server.round_bomb:
@@ -48,67 +48,68 @@ class MyRequestHandler(BaseHTTPRequestHandler):
             if 'planted' in round_bomb:
                 police()
             if 'defused' in round_bomb:
-                changeLight(0, 0, 255)
+                change_light(0, 0, 255)
 
         if round_phase != self.server.round_phase:
             self.server.round_phase = round_phase
             print('new round phase: %s' % round_phase)
             if 'over' in round_phase:
-                changeLight(255, 0, 0)
+                change_light(255, 0, 0)
             if 'live' in round_phase:
-                changeLight(153, 102, 255)
+                change_light(153, 102, 255)
             if 'freezetime' in round_phase:
-                changeLight(0, 0, 255)
+                change_light(0, 0, 255)
 
         if player_health != self.server.player_health:
             self.server.player_health = player_health
             print('player health: %s' % player_health)
-            if player_health <= 50:
-                changeLight(255, 255, 0)
-            if player_health <= 20:
-                changeLight(255, 51, 0)
+            hp_g = int(round(player_health / 100 * 255))
+            hp_r = int(round((255 * (1 - player_health / 100))))
+            change_light(hp_r, hp_g, 0)
             if player_health <= 10:
                 alarm()
+                time.sleep(0.8)
 
-        if weapon_ammo != self.server.weapon_ammo:
+        """if weapon_ammo != self.server.weapon_ammo:
             self.server.weapon_ammo = weapon_ammo
             print('weapon ammo: %s' % weapon_ammo)
             if player_health <= 5:
-                changeLight(255, 255, 255)
+                change_light(255, 255, 255)"""
 
     def get_round_phase(self, payload):
-        if usePhase == True:
+        if use_phase == True:
             if 'round' in payload and 'phase' in payload['round']:
                 return payload['round']['phase']
             else:
                 return None
 
     def get_round_bomb(self, payload):
-        if useBomb == True:
+        if use_bomb == True:
             if 'round' in payload and 'bomb' in payload['round']:
                 return payload['round']['bomb']
             else:
                 return None
 
     def get_player_health(self, payload):
-        if useHealth == True:
+        if use_health == True:
             if 'player' in payload and 'state' in payload['player']:
                 return payload['player']['state']['health']
             else:
                 return None
 
+    """
     def get_weapon_ammo(self, payload):
-        if useAmmo == True:
+        if use_ammo == True:
             if 'player_weapons' in payload:
                 return payload['player_weapons']['player']['weapons']['weapon_3']['ammo_clip']
             else:
-                return None
+                return None"""
 
     def log_message(self, format, *args):
         return
 
 
-def changeLight(r, g, b):
+def change_light(r, g, b):
     # loop through bulbs with new rgb value
     for bulbn in (bulbs):
         if bulbn != '':
@@ -120,7 +121,7 @@ def alarm():
     for bulbn in (bulbs):
         if bulbn != '':
             bulb = Bulb(bulbn)
-            bulb.start_flow(Flow(2, Flow.actions.recover, alarmFlow))
+            bulb.start_flow(Flow(2, Flow.actions.recover, alarm_flow))
 
 
 def police():
@@ -128,21 +129,22 @@ def police():
         if bulbn != '':
             bulb = Bulb(bulbn)
             # pulsate 40 times for 1 second each to show bomb timer
-            bulb.start_flow(Flow(40, Flow.actions.recover, bombFlow))
+            bulb.start_flow(Flow(40, Flow.actions.recover, bomb_flow))
 
 
 def main():
-    print('Welcome to yeelight-gsi by davidramiro')
+    print('Welcome to yeelight-valve-gsi by davidramiro')
     print('Reading config...')
     config = configparser.ConfigParser()
     config.read('config.ini')
     bulb_count = int(config.get('general', 'Lamp Count'))
     for n in range(1, (bulb_count + 1)):
         bulbs.append(config.get(str(n), 'ip'))
-    usePhase = config.getboolean('csgo settings', 'round phase colors')
-    useBomb = config.getboolean('csgo settings', 'c4 status colors')
-    useHealth = config.getboolean('csgo settings', 'health colors')
-    useAmmo = config.getboolean('csgo settings', 'ammo colors')
+    global use_phase, use_bomb, use_health, use_ammo
+    use_phase = config.getboolean('csgo settings', 'round phase colors')
+    use_bomb = config.getboolean('csgo settings', 'c4 status colors')
+    use_health = config.getboolean('csgo settings', 'health colors')
+    use_ammo = config.getboolean('csgo settings', 'ammo colors')
     print('Initializing...')
     for bulbn in bulbs:
         if bulbn != '':
@@ -156,7 +158,7 @@ def main():
     # start up the listening server
     server = MyServer(('localhost', 3000), MyRequestHandler)
     server.init_state()
-    print(time.asctime(), '-', 'yeelight-gsi is running - CTRL+C to stop')
+    print(time.asctime(), '-', 'yeelight-valve-gsi is running - CTRL+C to stop')
     try:
         server.serve_forever()
     except (KeyboardInterrupt, SystemExit):
@@ -169,7 +171,7 @@ def main():
             bulb.stop_music
             bulb.set_rgb(255, 255, 255)
             bulb.set_brightness(100)
-    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-gsi!')
+    print(time.asctime(), '-', 'Listener stopped. Thanks for using yeelight-valve-gsi!')
 
 
 main()
